@@ -47,10 +47,12 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/gsdk.css">
     <link rel="stylesheet" href="css/weui.css">
+    <link rel="stylesheet" href="css/sweetalert.css">
     <script src="js/vendor/modernizr-2.8.3.min.js"></script>
+
 </head>
 <body>
-<div class="page container" ng-app="bargin" ng-controller="main">
+<div class="page container" ng-app="bargin" id="main">
     <div class="hd">
         <h1 class="page_title"><?= $info['p_name'] ?></h1>
     </div>
@@ -104,22 +106,23 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
         <h4>Dear <?= $info['nickname'] ?></h4>
         <p>已经有<?php echo count($friends_support); ?>位亲友帮助 <span><img src="<?= $info['headimgurl'] ?>" style="max-height: 4em;"></span>
             <span style="color: red;"><?= $info['nickname'] ?></span>砍价了。
-            当前价格为<?php $last_price = end($friends_support)['current_price']; echo $last_price; ?>
+            当前价格为<span style="color: red; ">
+                <?php $last_price = end($friends_support)['current_price']; echo $last_price; ?>
+                </span>
             澳币(折合人民币<?= $last_price*4.8 ?>)，快快帮你的朋友补一刀吧！</p>
     </div>
-    <div class="row">
+    <div class="row" ng-controller="join">
         <div class="col-xs-6">
-            <a href="javascript:;" ng-click="helpBargin" class="weui_btn weui_btn_primary">
+            <a href="javascript:;" ng-click="helpBargin()" class="weui_btn weui_btn_primary">
                 <?php if(count($friends_support) == 0){
-                    echo "第一刀";
+                    echo "砍下第一刀";
                 }else{
                     echo "补上一刀";
                 } ?>
-
             </a>
         </div>
         <div class="col-xs-6">
-            <a href="javascript:;" class="weui_btn weui_btn_default">活动规则</a>
+            <a ng-click="scrollTo('rules')" class="weui_btn weui_btn_default">活动规则</a>
         </div>
 
     </div>
@@ -176,7 +179,7 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
 
         </div>
     </div>
-    <div class="row">
+    <div class="row" id="rules">
         <div class="col-xs-12">
             <section class="more_box_title">
                 <div class="more_box_title_main">
@@ -200,10 +203,9 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
                 </li>
             </ol>
         </div>
-
     </div>
-
 </div>
+
 
 
 <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
@@ -211,6 +213,9 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
 <script src="js/plugins.js"></script>
 <script src="js/main.js"></script>
 <script src="js/jquery.countdown.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
+<script src="js/angular-cookies.min.js"></script>
+<script src="js/sweetalert.min.js"></script>
 
 <script type="text/javascript">
     $("#count-down")
@@ -224,45 +229,107 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
 <!-- Latest compiled and minified JavaScript -->
 <script src="js/bootstrap.min.js"></script>
 
-<!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
-<script>
-    (function (b, o, i, l, e, r) {
-        b.GoogleAnalyticsObject = l;
-        b[l] || (b[l] =
-                function () {
-                    (b[l].q = b[l].q || []).push(arguments)
-                });
-        b[l].l = +new Date;
-        e = o.createElement(i);
-        r = o.getElementsByTagName(i)[0];
-        e.src = 'https://www.google-analytics.com/analytics.js';
-        r.parentNode.insertBefore(e, r)
-    }(window, document, 'script', 'ga'));
-    ga('create', 'UA-XXXXX-X', 'auto');
-    ga('send', 'pageview');
-</script>
+
 <script>
     'use strict';
-    var app = angular.module('bargin', []);
-    app.controller('main', function($scope, $http) {
-        $http.get("welcome.htm")
-            .then(function(response) {
-                $scope.myWelcome = response.data;
-            });
-    });
-    function helpBargin(){
-        console.log("Button Press");
-        let result = Cookies.get("openid");
-        if(result && result.length() === 28){
-            console.log("Log In Success");
-            $.ajax(
+    var app = angular.module('bargin', ['ngCookies']);
 
-            )
+    app.config(['$locationProvider', function($locationProvider){
+        $locationProvider.html5Mode({enabled: true, requireBase: false}).hashPrefix('!');
+    }]);
+
+    app.controller('join', function($scope, $http, $cookies, $location, $window, $anchorScroll, $rootScope) {
+        $scope.helpBargin = function(){
+            console.log("Button Press");
+            let result = $cookies.get("openid");
+            if(result){
+                console.warn("logined");
+                let req = {
+                    method: 'POST',
+                    url: 'ajax/bargin-help-check.php',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    data: {
+                        events: <?= $events_id ?>,
+                        openid: $cookies.get("openid"),
+                        work_type: 'help'
+                    }
+                }
+                // now we are getting all the result
+                $http(req).then(function(response){
+                    if(response.result == 'succ'){
+                        swal("Good job!", "刚刚帮你朋友 <?= $info['nickname'] ?> 砍掉了"
+                            + response.amount + "澳币",
+                            "success")
+                    }else{
+                        swal({
+                            title: "哦no~~",
+                            text : "你已经帮你朋友砍过价了，真的很喜欢的话，发起自己的砍价吧！",
+                            type : "warning",
+                            showCancelButton: true,
+                            cancelButtonText: "取消",
+                            confirmButtonColor: "#DD6B55",
+                            confirmButtonText: "发起砍价",
+                            closeOnConfirm: false
+                        }, startNewBargin($http, $location, $cookies));
+                    }
+                    console.log(response);
+                });
+
+            }else{
+                // now is the testing app
+                let urlBase = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxae45c193de06d5a4&redirect_uri="
+                    + "http%3A%2F%2F127.0.0.1%2FAusway%2Fapp%2Fipure-bargin%2Fsrc%2Flanding-guide.php"
+                    + "&response_type=code&scope=snsapi_userinfo&state=<?= $events_id ?>#wechat_redirect";
+                console.log(urlBase);
+                $window.location.href = urlBase;
+            }
         }
-    }
 
-    var testData = function(){
-        Cookies.set("openid","oSHx9wuWI3503RQAoA2fPXMFmRys")
+        $scope.scrollTo = (id)=>{
+            $location.hash(id);
+            console.log($location.hash());
+            $anchorScroll();
+        }
+    });
+
+    function startNewBargin($http, $location, $cookies){
+        let req = {
+            method: 'POST',
+            url: 'ajax/bargin-help-check.php',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: {
+                events: <?= $events_id ?>,
+                openid: $cookies.get("openid"),
+                work_type: 'create'
+            }
+        }
+
+        $http(req).then(function(response){
+            if(response.result == 'succ'){
+                $location.search('et', response.et);
+                swal("Good job!", "你已经成功的创建了自己的砍价，点击右上角分享给朋友开始砍价吧~~ 分享后更新显示页面",
+                    "success")
+            }else{
+                // TODO: need to return id from class
+                swal({
+                    title: "忘记了！",
+                    text : "你已经创建过相应产品的砍价了，要去看看么？",
+                    type : "warning",
+                    showCancelButton: true,
+                    cancelButtonText: "返回",
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "去看看",
+                    closeOnConfirm: true
+                }, function(){
+                    console.log("Lets go");
+                });
+            }
+//                TODO: Need to finish the page lead to personal page
+        });
     }
 </script>
 </body>

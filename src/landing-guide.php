@@ -10,10 +10,6 @@ include("functions.php");
 require('class/jssdk.php');
 global $cookies;
 
-$opp = array(1, 2, 3, 4, 5, 6, 2, 1, 4, 5, 6, 4, 3);
-$rand = rand(0, 12);
-//get the random page id
-$land_page_id = $opp[$rand];
 $get = FALSE;
 
 $req_uri = explode('/',$_SERVER["REQUEST_URI"], -1);
@@ -87,7 +83,7 @@ $time = system_time();
 
 
 $ver_code = substr(md5($gift_id.$time."oneu"),-6);
-$url = "//".$_SERVER["HTTP_HOST"] . $req_uri."/gift-voucher.php?gift_id=".$gift_id."&t=".$time."&ver=".$ver_code;
+$url = "//".$_SERVER["HTTP_HOST"] . $req_uri."/index.php?et=".$state."&t=".$time."&ver=".$ver_code;
 
 //var_dump($url);
 //var_dump($user_info);

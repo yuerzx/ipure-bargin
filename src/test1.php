@@ -21,3 +21,11 @@ var_dump($re1);
 //echo "Insert Data";
 //$re2 = $user_class->help_bargin(19, 1);
 //var_dump($re2);
+
+echo "Get User By Openid";
+$re1 = $user_class->get_user_id_by_openid("oE4-SuFWt2QJAkqskpIuTLBNX8V0");
+var_dump($re1);
+
+echo "Inser New Events";
+//$re2 = $user_class->set_new_events(44,2);
+var_dump($re2);

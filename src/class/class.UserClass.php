@@ -20,7 +20,6 @@ class Game_Class
         $this->table_friends_help = $this->wpdb->prefix.'oneuni_wechat_friends_help';
     }
 
-
     public function get_user_info_by_id($id)
     {
         $id = intval($id);
@@ -29,6 +28,18 @@ class Game_Class
         ",
             $id);
         $result = $this->wpdb->get_row($query, ARRAY_A);
+        return $result;
+    }
+
+    public function get_user_id_by_openid($openid)
+    {
+        $query = $this->wpdb->prepare("
+            SELECT user_id
+            FROM $this->table_wechat_user_db
+            WHERE openid = %s
+        ",
+            $openid);
+        $result = $this->wpdb->get_var($query);
         return $result;
     }
 
@@ -71,11 +82,23 @@ class Game_Class
             JOIN $this->table_wechat_products
             ON $this->table_wechat_bargin_events.`product_id` = $this->table_wechat_products.`p_id`
             JOIN $this->table_wechat_user_db
-            ON  $this->table_wechat_bargin_events.`starter_id` = $this->table_wechat_user_db.`user_id`
+            ON  $this->table_wechat_bargin_events.`user_id` = $this->table_wechat_user_db.`user_id`
             WHERE $this->table_wechat_bargin_events.`events_id` = %d
         ",
             $id);
         $result = $this->wpdb->get_row($query, ARRAY_A);
+        return $result;
+    }
+
+    public function get_product_id_by_eventid($id){
+        $id = intval($id);
+        $query = $this->wpdb->prepare("
+            SELECT product_id
+            FROM $this->table_wechat_bargin_events
+            WHERE events_id = %d
+        ",
+            $id);
+        $result = $this->wpdb->get_var($query);
         return $result;
     }
 
@@ -106,6 +129,16 @@ class Game_Class
         return $result;
     }
 
+    public function check_events_status($user_id, $product_id){
+        $query = $this->wpdb->prepare("
+            SELECT events_id
+            FROM $this->table_wechat_bargin_events
+            WHERE `user_id` = %d AND `product_id` = %d
+        ", $user_id, $product_id);
+        $result = $this -> wpdb -> get_var($query);
+        return $result;
+    }
+
     public function get_total_discount($events_id){
         $query = $this->wpdb->prepare("
             SELECT sum(amount)
@@ -129,6 +162,21 @@ class Game_Class
             $events_id);
         $result = $this->wpdb->get_var($query);
         return $result;
+    }
+
+    public function set_new_events($user_id, $product_id){
+        $result = $this->wpdb->insert(
+            $this->table_wechat_bargin_events,
+            array(
+                'product_id' => $product_id,
+                'user_id'    => $user_id
+            ),
+            array(
+                '%d',
+                '%d'
+            )
+        );
+        return $this->wpdb->insert_id;
     }
 
     public function help_bargin($user_id, $events_id){
