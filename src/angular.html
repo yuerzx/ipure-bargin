@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="js/angular.min.js"></script>
+
+</head>
+<body>
+<div ng-app="bargin">
+    <div ng-controller="main">
+        <h1>{{welcome}}</h1>
+        <button id="getPost" ng-click="getPost()">Her</button>
+    </div>
+    <div ng-controller="cookies">
+        <div>{{Sleeping}}</div>
+        <button id="setUp" ng-click="setIt()">Start To Set</button>
+        <button ng-click="getIt()">Get Cookie</button>
+    </div>
+</div>
+<script src="js/angular-cookies.min.js"></script>
+<script>
+    'use strict';
+    var app = angular.module('bargin',['ngCookies']);
+    app.controller('main', function($scope, $http) {
+        //set up the cookies first
+        let req = {
+            method: 'POST',
+            url: 'ajax/bargin-help-check.php',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: {
+                events: 1,
+                openid: "oSHx9wuWI3503RQAoA2fPXMFmRys",
+                userid: 14,
+                code: 'd15bca24'
+            }
+        }
+        $scope.getPost = function(){
+            $http(req).then(function(response){
+                $scope.welcome = response.data;
+                console.log(response);
+            });
+        }
+    });
+
+    app.controller("cookies",function($scope, $cookies){
+        $scope.setIt = function(){
+            $scope.Sleeping = "set cookie";
+            $cookies.put("openid", "998877");
+        }
+
+        $scope.getIt = () => {
+            $scope.Sleeping = $cookies.get("openid");
+        }
+    })
+
+
+</script>
+
+</body>
+</html>

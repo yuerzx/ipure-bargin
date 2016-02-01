@@ -13,15 +13,11 @@ class Game_Class
     public function __construct()
     {
         global $wpdb;
-        global $table_wechat_user;
-        global $table_wechat_bargin_events;
-        global $table_wechat_products;
-        //$this->mail = new PHPMailer();
         $this->wpdb = &$wpdb;
-        $this->table_wechat_user_db = &$table_wechat_user;
-        $this->table_wechat_bargin_events = &$table_wechat_bargin_events;
-        $this->table_wechat_products = &$table_wechat_products;
-        $this->table_friends_help = $wpdb->prefix.'oneuni_wechat_friends_help';
+        $this->table_wechat_user_db = $this->wpdb->prefix.'oneuni_wechat_database';
+        $this->table_wechat_bargin_events = $this->wpdb->prefix.'oneuni_wechat_bargin_events';
+        $this->table_wechat_products = $this->wpdb->prefix.'oneuni_wechat_products';
+        $this->table_friends_help = $this->wpdb->prefix.'oneuni_wechat_friends_help';
     }
 
 
@@ -96,6 +92,65 @@ class Game_Class
             $id);
         $result = $this->wpdb->get_results($query, ARRAY_A);
         return $result;
+    }
+
+    public function check_if_support_status($user_id, $events_id){
+        $u_id = intval($user_id);
+        $event_id = intval($events_id);
+        $query = $this->wpdb->prepare("
+            SELECT id
+            FROM $this->table_friends_help
+            WHERE `user_id` = %d AND `events_id` = %d
+        ", $u_id, $event_id);
+        $result = $this -> wpdb -> get_var($query);
+        return $result;
+    }
+
+    public function get_total_discount($events_id){
+        $query = $this->wpdb->prepare("
+            SELECT sum(amount)
+		    FROM $this->table_friends_help
+		    WHERE events_id = %d
+        ",
+            $events_id);
+
+        $result = $this->wpdb->get_var($query);
+        return $result;
+    }
+
+    public function get_product_price($events_id){
+        $query = $this->wpdb->prepare("
+            SELECT p_amount
+            FROM $this->table_wechat_bargin_events
+            JOIN $this->table_wechat_products
+            ON $this->table_wechat_products.`p_id` = $this->table_wechat_bargin_events.`product_id`
+            WHERE $this->table_wechat_bargin_events.`events_id` = %d
+        ",
+            $events_id);
+        $result = $this->wpdb->get_var($query);
+        return $result;
+    }
+
+    public function help_bargin($user_id, $events_id){
+        $amount = (rand(0,250))/100;
+        $current_price = $this->get_product_price($events_id) - $this->get_total_discount($events_id) - $amount;
+        $result = $this->wpdb->insert(
+            $this->table_friends_help,
+            array(
+                'events_id' => $events_id,
+                'user_id'   => $user_id,
+                'amount'    => $amount,
+                'current_price' => $current_price
+            ),
+            array(
+                '%d',
+                '%d',
+                '%f',
+                '%f'
+            )
+        );
+
+        return array("result" => $result, "amount"=>$amount);
     }
 
     public function send_welcome_email($name, $email)

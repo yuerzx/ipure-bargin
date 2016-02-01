@@ -30,10 +30,7 @@ global $table_wechat_user;
 $table_wechat_products = $wpdb->prefix.'oneuni_wechat_products';
 global $table_wechat_products;
 
-$table_wechat_bargin_events = $wpdb->prefix.'oneuni_wechat_bargin_events';
-global $table_wechat_bargin_events;
 global $user_class;
-
 $user_class = new Game_Class();
 
 function system_time(){

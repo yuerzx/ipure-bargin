@@ -42,10 +42,7 @@ if(!empty($_COOKIE['openid'])){
     $user_info-> headimgurl = $_COOKIE['headimgurl'];
     $string = $user_info->user_id."oneu";
     $ver_code = substr(md5($string),-9);
-    if( $ver_code == $_COOKIE['ver_code_user_data']) {
-
-        //if true then we do nothing about it
-    }else{
+    if( $ver_code != $_COOKIE['ver_code_user_data']) {
         //if the cookies has been modified by user
         //we use blank information instead
         $user_info-> nickname   = "万友澳洲 测试账号";
@@ -87,22 +84,7 @@ if(!empty($_COOKIE['openid'])){
 
 
 $time = system_time();
-$gift_card_list = $jssdk->get_giftcard_by_id($user_info->user_id);
-if($gift_card_list){
-    //if there is a gift under user before
-    $time_diff = $time - $gift_card_list[0]["time_stamp"];
-    //if the last time is 8 hours before, then we choose to close up the shack
-    if($time_diff <= 28800){
-        //smaller than 8 hours
-        $gift_id = $gift_card_list[0]["gift_id"];
-        $time = $gift_card_list[0]['time_stamp'];
-    }else{
-        $gift_id = $jssdk->create_giftcard($user_info->user_id,$land_page_id,$time);
-    }
-}else{
-    //if there is no giftcard under user before, then we create one for user
-    $gift_id = $jssdk->create_giftcard($user_info->user_id,$land_page_id,$time);
-}
+
 
 $ver_code = substr(md5($gift_id.$time."oneu"),-6);
 $url = "//".$_SERVER["HTTP_HOST"] . $req_uri."/gift-voucher.php?gift_id=".$gift_id."&t=".$time."&ver=".$ver_code;

@@ -44,14 +44,13 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
 
     <link rel="stylesheet" href="css/main.css">
     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
-          integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/gsdk.css">
     <link rel="stylesheet" href="css/weui.css">
     <script src="js/vendor/modernizr-2.8.3.min.js"></script>
 </head>
 <body>
-<div class="page container">
+<div class="page container" ng-app="bargin" ng-controller="main">
     <div class="hd">
         <h1 class="page_title"><?= $info['p_name'] ?></h1>
     </div>
@@ -95,7 +94,7 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
         <div class="weui_cells">
             <div class="weui_cell">
                 <div class="weui_cell_bd weui_cell_primary">
-                    <p>Count Down</p>
+                    <p>活动倒计时</p>
                 </div>
                 <div class="weui_cell_ft" id="count-down"></div>
             </div>
@@ -103,14 +102,21 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
     </div>
     <div class="bd">
         <h4>Dear <?= $info['nickname'] ?></h4>
-        <p>已经有3位亲友帮助 <span><img src="<?= $info['headimgurl'] ?>" style="max-height: 4em;"></span>
+        <p>已经有<?php echo count($friends_support); ?>位亲友帮助 <span><img src="<?= $info['headimgurl'] ?>" style="max-height: 4em;"></span>
             <span style="color: red;"><?= $info['nickname'] ?></span>砍价了。
             当前价格为<?php $last_price = end($friends_support)['current_price']; echo $last_price; ?>
             澳币(折合人民币<?= $last_price*4.8 ?>)，快快帮你的朋友补一刀吧！</p>
     </div>
     <div class="row">
         <div class="col-xs-6">
-            <a href="javascript:;" class="weui_btn weui_btn_primary">补上一刀</a>
+            <a href="javascript:;" ng-click="helpBargin" class="weui_btn weui_btn_primary">
+                <?php if(count($friends_support) == 0){
+                    echo "第一刀";
+                }else{
+                    echo "补上一刀";
+                } ?>
+
+            </a>
         </div>
         <div class="col-xs-6">
             <a href="javascript:;" class="weui_btn weui_btn_default">活动规则</a>
@@ -125,7 +131,7 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
                     <td colspan="3" class="text-center">给力亲友团</td>
                 </tr>
                 <tr>
-                    <td>亲友</td>
+                    <td class="text-center">亲友</td>
                     <td>砍掉价格</td>
                     <td>最终价格</td>
                 </tr>
@@ -136,7 +142,7 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
                         ?>
                         <tr>
                             <td><img src="<?= $support['headimgurl'] ?>"
-                                     style="max-height: 2.5em;padding-right: 6px"
+                                     style="max-height: 2em;padding-right: 6px"
                                      class="img-circle"
                                 ><?= $support['nickname'] ?></td>
                             <td><?= $support['amount'] ?></td>
@@ -156,6 +162,13 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
                         <btitle>商品详情</btitle>
                     </div>
                 </section>
+        </div>
+        <div class="col-xs-12" style="padding-top: 20px">
+            <?php
+            //import the temple files
+            $tpl_loc = 'views/'.$info['p_details'];
+            include $tpl_loc;
+            ?>
         </div>
     </div>
     <div class="row">
@@ -201,17 +214,15 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
 
 <script type="text/javascript">
     $("#count-down")
-            .countdown("2016/01/31", function (event) {
-                $(this).text(
-                        event.strftime('%D Days %H:%M:%S')
-                );
-            });
+        .countdown("2016/02/03", function (event) {
+            $(this).text(
+                event.strftime('%D天%H时%M分%S秒')
+            );
+        });
 </script>
 
 <!-- Latest compiled and minified JavaScript -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
-        integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
-        crossorigin="anonymous"></script>
+<script src="js/bootstrap.min.js"></script>
 
 <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
 <script>
@@ -229,6 +240,30 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
     }(window, document, 'script', 'ga'));
     ga('create', 'UA-XXXXX-X', 'auto');
     ga('send', 'pageview');
+</script>
+<script>
+    'use strict';
+    var app = angular.module('bargin', []);
+    app.controller('main', function($scope, $http) {
+        $http.get("welcome.htm")
+            .then(function(response) {
+                $scope.myWelcome = response.data;
+            });
+    });
+    function helpBargin(){
+        console.log("Button Press");
+        let result = Cookies.get("openid");
+        if(result && result.length() === 28){
+            console.log("Log In Success");
+            $.ajax(
+
+            )
+        }
+    }
+
+    var testData = function(){
+        Cookies.set("openid","oSHx9wuWI3503RQAoA2fPXMFmRys")
+    }
 </script>
 </body>
 </html>
