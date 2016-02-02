@@ -38,7 +38,7 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
 <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>iPure Scarf New Year Promote</title>
+    <title>回家过年，怎能少了澳洲的iPure羊毛围巾，新春特价~~惊喜连连</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -105,11 +105,31 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <td>产品原价</td>
+                    <td>现价</td>
+                    <td>底价</td>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><?= $info['p_amount']; ?>澳币</td>
+                    <td style="color: red;"><?php $last_price = end($friends_support)['current_price']; echo $last_price; ?>澳币</td>
+                    <td><?= $info['p_amount']-16; ?>澳币</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
     <div class="bd">
-        <h4>Dear <?= $info['nickname'] ?></h4>
+        <h4>亲爱的 <?= $info['nickname'] ?></h4>
         <p>已经有<?php echo count($friends_support); ?>位亲友帮助 <span><img src="<?= $info['headimgurl'] ?>" style="max-height: 4em;"></span>
-            <span style="color: red;"><?= $info['nickname'] ?></span>砍价了。
-            当前价格为<span style="color: red; ">
+            <span style="color: red;"><?= $info['nickname'] ?></span>砍价了。原价<?= $info['p_amount']; ?>
+            现价为<span style="color: red; ">
                 <?php $last_price = end($friends_support)['current_price']; echo $last_price; ?>
                 </span>
             澳币(折合人民币<?= round($last_price*4.8, 2); ?>)，快快帮你的朋友补一刀吧！</p>
@@ -130,12 +150,13 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
             <table class="table clearfix qyt_box_table">
                 <thead>
                 <tr>
-                    <td colspan="3" class="text-center">给力亲友团</td>
+                    <td colspan="4" class="text-center">友团战报</td>
                 </tr>
                 <tr>
                     <td class="text-center">亲友</td>
                     <td>砍掉价格</td>
-                    <td>最终价格</td>
+                    <td>价格(澳币)</td>
+                    <td>价格(RMB)</td>
                 </tr>
                 </thead>
                 <tbody>
@@ -149,6 +170,7 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
                                 ><?= $support['nickname'] ?></td>
                             <td><?= $support['amount'] ?></td>
                             <td><?= $support['current_price'] ?></td>
+                            <td><?= round($support['current_price']*4.8,2) ?></td>
                         </tr>
                     <?php
                     }
@@ -192,26 +214,18 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
             <ol style="padding-left: 5%;">
                 <li>活动时间：</li>
                 <li>活动限额：一人一种颜色限购一条</li>
-                <li>发起砍价限时48小时，请在有效期内联系商家购买哦</li>
+                <li>请在有效期内联系商家购买哦,砍价活动2月6日截止</li>
                 <li>可砍到最低价购买，砍价过程中也可随时联系商家购买</li>
                 <li>产品限量200件，先下单付款者先得，售完即止</li>
+                <li>IPure 诚招线下经销商，详情联系客服</li>
                 <li>找人帮砍可分享到朋友圈或发送给好友</li>
+                <li>最终解释权属于iPure UGG Australian</li>
                 <li>砍价活动持续更新，更多精彩活动尽情关注</li>
                 <li>
                     客户微信号：
                     <img src="img/system/contact.jpg" style="max-width: 90%; margin: auto;">
                 </li>
             </ol>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-12">
-            <?php var_dump($_COOKIE);?>
-            <hr>
-            <?php //$res = $user_class->set_user_info($_COOKIE['openid'], $_COOKIE);
-            var_dump($res);
-            ?>
         </div>
     </div>
 </div>
@@ -223,13 +237,13 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
 <script src="js/plugins.js"></script>
 <script src="js/main.js"></script>
 <script src="js/jquery.countdown.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
+<script src="js/angular.min.js"></script>
 <script src="js/angular-cookies.min.js"></script>
 <script src="js/sweetalert.min.js"></script>
 
 <script type="text/javascript">
     $("#count-down")
-        .countdown("2016/02/03", function (event) {
+        .countdown("2016/02/06", function (event) {
             $(this).text(
                 event.strftime('%D天%H时%M分%S秒')
             );
@@ -276,13 +290,13 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
                 $http(req).then(function(response){
                     console.log("This is result: " + response.data.result);
 
-                    if(response.data.result == 'succ'){
+                    if(response.data.result === 'succ'){
                         swal("Good job!", "刚刚帮你朋友 <?= $info['nickname'] ?> 砍掉了"
                             + response.data.amount + "澳币",
                             "success")
                         $window.location.reload();
 
-                    }else if(response.data.result == 'no-existed'){
+                    }else if(response.data.result === 'no-existed'){
                         $cookies.remove('openid');
                         $window.location.reload();
                     }else{
@@ -344,9 +358,14 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
             console.log(response.data.et);
             if(response.data.result == 'succ'){
                 $location.search('et', response.data.et);
-                swal("Good job!", "你已经成功的创建了自己的砍价，点击右上角分享给朋友开始砍价吧~~ 3秒后更新显示页面",
-                    "success")
-                $window.location.reload();
+                swal({
+                    title: "Good job!",
+                    text : "你已经成功的创建了自己的砍价，点击右上角分享给朋友开始砍价吧~~ 确认后更新显示页面",
+                    type : "success",
+                    closeOnConfirm: true,
+                },function(){
+                    $window.location.reload();
+                })
             }else{
                 $location.search('et', response.data.et);
                 swal({
@@ -365,13 +384,9 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
                     }
                 });
             }
-//                TODO: Need to finish the page lead to personal page
         });
     }
 
-    jQuery(document).ready(function(){
-
-    });
 </script>
 </body>
 </html>
