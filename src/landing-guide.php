@@ -18,6 +18,7 @@ $req_uri = implode('/', $req_uri);
 
 // 测试id
 $jssdk = new JSSDK("wxae45c193de06d5a4", "f9a61bd7a83a5302a9960a84eb9e8ba3");
+global $user_class;
 $user_info = new stdClass();
 
 
@@ -27,29 +28,8 @@ if(isset($_GET['code']) && isset($_GET['state']) && strlen($_GET['code']) == 32)
     $state = sanitize_text_field($_GET['state']);
 }
 
-if(!empty($_COOKIE['openid'])){
-    //if we are already get all the information, then time to retrive from database
-    $user_info = new stdClass();
-    $user_info-> nickname   = $_COOKIE['nickname'];
-    $user_info-> user_id    = $_COOKIE['user_id'];
-    $user_info-> openid     = $_COOKIE['openid'];
-    $user_info-> country    = $_COOKIE['country'];
-    $user_info-> city       = $_COOKIE['city'];
-    $user_info-> headimgurl = $_COOKIE['headimgurl'];
-    $string = $user_info->user_id."oneu";
-    $ver_code = substr(md5($string),-9);
-    if( $ver_code != $_COOKIE['ver_code_user_data']) {
-        //if the cookies has been modified by user
-        //we use blank information instead
-        $user_info-> nickname   = "万友澳洲 测试账号";
-        $user_info-> user_id    = 11;
-        $user_info-> openid     = "00";
-        $user_info-> country    = "澳大利亚";
-        $user_info-> city       = "墨尔本";
-        $user_info-> headimgurl = "https://oneu.me/wp-content/themes/OneUni/images/common/logo-withwords.png";
-    }
-}elseif($get && empty($_COOKIE['openid'])){
-    //if customers are new, then we are ready for next step.
+if($get){
+    //As long as we get here, there is no need to check
     $user_info = $jssdk->getPageUserInfo($code);
     if(!empty($user_info->openid)){
         // if successfully get the user information, then we are able to process.
@@ -62,20 +42,13 @@ if(!empty($_COOKIE['openid'])){
         $string = $user_info->user_id."oneu";
         $ver_code = substr(md5($string),-9);
         $cookies->set('ver_code_user_data', $ver_code, 30, "days");
+
+        $res = $user_class->set_user_info($user_info->openid, $user_info);
     }else{
         //relocated to the login page, to get code again.
-        wp_redirect("wechat-landing.php");
+        wp_redirect("index.php");
         exit;
     }
-}else{
-    //without get and without the session, logout
-    $user_info = new stdClass();
-    $user_info-> nickname   = "万友澳洲 测试账号";
-    $user_info-> user_id    = 11;
-    $user_info-> openid     = "00";
-    $user_info-> country    = "澳大利亚";
-    $user_info-> city       = "墨尔本";
-    $user_info-> headimgurl = "https://oneu.me/wp-content/themes/OneUni/images/common/logo-withwords.png";
 }
 
 
@@ -83,7 +56,7 @@ $time = system_time();
 
 
 $ver_code = substr(md5($gift_id.$time."oneu"),-6);
-$url = "//".$_SERVER["HTTP_HOST"] . $req_uri."/index.php?et=".$state."&t=".$time."&ver=".$ver_code;
+$url = "//".$_SERVER["HTTP_HOST"] . $req_uri."/index.php?et=".$state."&ver=".$ver_code;
 
 //var_dump($url);
 //var_dump($user_info);

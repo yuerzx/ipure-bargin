@@ -2,17 +2,14 @@
 class JSSDK {
   private $appId;
   private $appSecret;
-  private $wpdb,$table_wechat_user, $table_wechat_giftcard;
+  private $wpdb,$table_wechat_user;
 
   public function __construct($appId, $appSecret) {
     global $wpdb;
-    global $table_wechat_user;
-    global $table_wechat_products;
     $this->appId = $appId;
     $this->appSecret = $appSecret;
     $this->wpdb = &$wpdb;
-    $this->table_wechat_user = &$table_wechat_user;
-    $this->table_wechat_giftcard = &$table_wechat_products;
+    $this->table_wechat_user = $this->wpdb->prefix.'oneuni_wechat_database';
   }
 
   public function getSignPackage() {
@@ -114,39 +111,45 @@ class JSSDK {
     $url = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=$this->appId&secret=$this->appSecret&code={$code}&grant_type=authorization_code";
     $res = json_decode($this->httpGet($url));
     if(!empty($res->access_token) && isset($res->access_token)){
-      if($this->checkUserExist($res->openid)){
+      $user_id = $this->getUserByOpenID($res->openid);
+      if($user_id){
         //check if the user is in database already
-        //retreat from database
-        $user_info = $this->getUserByOpenID( (string)$res->openid);
-        $update_result = $this->updateUserInfo( (string)$res->openid, $res);
+        $this->updateUserInfo( (string)$res->openid, $res);
+        $res->user_id = $user_id;
         return $res;
       }else{
         //not existed before, I need to creat something
         $this->insertNewUser($res);
         $lastid = $this->wpdb->insert_id;
-        $user_info = $this->getUserInfoJson($res->access_token, (string)$res->openid);
-        if(!empty($user_info)){
-          $user_info->user_id = $lastid;
-          $this->updateUserInfo($res->openid, $user_info);
-          return $user_info;
+        $maxTries = 3;
+        for($try =1; $try <= $maxTries; $try ++){
+          $user_info = $this->getUserInfoJson($res->access_token, (string)$res->openid);
+          if(!empty($user_info->nickname)){
+            return $user_info;
+            break;
+          }
         }
+
       };
     }else{
       return "error";
     }
   }
 
-  private function getUserInfoJson($token,$openid){
+  public function getUserInfoJson($token,$openid){
     $token = (string)$token;
     $openid = (string)$openid;
     $url = "https://api.weixin.qq.com/sns/userinfo?access_token={$token}&openid={$openid}&lang=zh_CN";
-    $res = json_decode($this->httpGet($url));
+    $res = $this->httpGet($url);
+    $res = json_decode($res);
     return $res;
   }
 
-  private function checkUserExist($openid){
+  public function getUserByOpenID($openid){
     $query = $this->wpdb->prepare("
-            SELECT user_id FROM $this->table_wechat_user WHERE openid = %s
+            SELECT user_id
+            FROM   $this->table_wechat_user
+            WHERE  openid = %s
         ",
         $openid);
     $result = $this->wpdb->get_var( $query );
@@ -178,7 +181,8 @@ class JSSDK {
     return $lastid;
   }
 
-  private function updateUserInfo($openid, $data){
+  public function updateUserInfo($openid, $data){
+    $openid = (string)$openid;
     if(!isset($data->sex)) $data->sex = 3;
     if(!isset($data->city)) $data->city = 0;
     if(!isset($data->province)) $data->province = 3;
@@ -197,44 +201,6 @@ class JSSDK {
         ),
         array( 'openid' => $openid )
     );
-    return $result;
-  }
-
-  public function getUserByOpenID($openid){
-    $query = $this->wpdb->prepare("
-            SELECT * FROM $this->table_wechat_user WHERE openid = %s
-        ",
-        $openid);
-    $result = $this->wpdb->get_row( $query, ARRAY_A );
-    return $result;
-  }
-
-  public function create_giftcard($user_id, $gift_type,$time_stamp){
-    $result = $this->wpdb->insert(
-        $this->table_wechat_giftcard,
-        array(
-            'wechat_user_id'  => $user_id,
-            'gift_type'       => $gift_type,
-            'time_stamp'      => $time_stamp
-        ),
-        array(
-            '%d',
-            '%d',
-            '%d'
-        )
-    );
-    $lastid = $this->wpdb->insert_id;
-    return $lastid;
-  }
-
-  public function get_giftcard_by_id($user_id){
-    $user_id = intval($user_id);
-    $result = $this->wpdb->get_results("
-    SELECT gift_id,wechat_user_id,gift_type,time_stamp
-    FROM $this->table_wechat_giftcard WHERE
-    wechat_user_id = $user_id
-    ORDER BY time_stamp DESC
-    ", ARRAY_A);
     return $result;
   }
 

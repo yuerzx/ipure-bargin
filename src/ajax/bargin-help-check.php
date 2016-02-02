@@ -23,7 +23,7 @@ if($json_raw){
             echo json_encode(array('result' =>"existed"));
         }else{
             //if the user didnt been regsiter before
-            $bargin_result = $user_class->help_bargin($user_id, $events_id);
+            $bargin_result = $user_class->set_help_bargin($user_id, $events_id);
             if($bargin_result['result']){
                 echo json_encode(array("amount" => $bargin_result['amount'], "result"=>"succ"));
             }
@@ -34,14 +34,13 @@ if($json_raw){
             $check_existed = $user_class->check_events_status($user_id, $product_id);
             if($check_existed){
                 //The code is existed
-                echo json_encode(array('result' =>"existed"));
+                echo json_encode(array('result' =>"existed", 'et'=>$check_existed));
             }else{
                 //The code is not existed before
-                $insert_id = $user_class->set_new_events($user_id, $product_id);
+                $insert_id = $user_class->set_new_events($user_id, $product_id, $events_id);
                 echo json_encode(array("result"=>"succ", "et"=>$insert_id));
             }
         }
-
     }else{
         echo json_encode(array('result' =>"no-existed"));
     }
