@@ -196,7 +196,12 @@ class Game_Class
     }
 
     public function set_help_bargin($user_id, $events_id){
-        $amount = (rand(0,250))/100;
+        $before_price = $this->get_product_price($events_id) - $this->get_total_discount($events_id);
+        if($before_price <= 25){
+            $amount = 0;
+        }else{
+            $amount = (rand(0,170))/100;
+        }
         $current_price = $this->get_product_price($events_id) - $this->get_total_discount($events_id) - $amount;
         $result = $this->wpdb->insert(
             $this->table_friends_help,

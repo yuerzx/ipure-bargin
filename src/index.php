@@ -112,25 +112,28 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
                 <tr>
                     <td>产品原价</td>
                     <td>现价</td>
-                    <td>底价</td>
+                    <td>原料产地</td>
                 </tr>
                 </thead>
                 <tbody>
                 <tr>
                     <td><?= $info['p_amount']; ?>澳币</td>
                     <td style="color: red;"><?php $last_price = end($friends_support)['current_price']; echo $last_price; ?>澳币</td>
-                    <td><?= $info['p_amount']-16; ?>澳币</td>
+                    <td>澳洲</td>
                 </tr>
                 </tbody>
             </table>
         </div>
     </div>
     <div class="bd">
-        <h4>亲爱的 <?= $info['nickname'] ?></h4>
+        <h4>亲爱的</h4>
         <p>已经有<?php echo count($friends_support); ?>位亲友帮助 <span><img src="<?= $info['headimgurl'] ?>" style="max-height: 4em;"></span>
-            <span style="color: red;"><?= $info['nickname'] ?></span>砍价了。原价<?= $info['p_amount']; ?>
+            <span style="color: red;"><?= $info['nickname'] ?></span>砍价了。
             现价为<span style="color: red; ">
-                <?php $last_price = end($friends_support)['current_price']; echo $last_price; ?>
+                <?php $last_price = end($friends_support)['current_price'];
+                if(empty($last_price)){
+                    echo $info['p_amount'];
+                }; ?>
                 </span>
             澳币(折合人民币<?= round($last_price*4.8, 2); ?>)，快快帮你的朋友补一刀吧！</p>
     </div>
@@ -262,19 +265,21 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
         $locationProvider.html5Mode({enabled: true, requireBase: false}).hashPrefix('!');
     }]);
 
-    app.controller('join', function($scope, $http, $cookies, $location, $window, $anchorScroll, $route) {
+    app.controller('join', function($scope, $http, $cookies, $location, $window, $anchorScroll) {
         //Here to set up some deafult value for the app
         $scope.barginText = "帮助砍价";
         $scope.barginButtonDisable = "false";
+        angular.element(document).ready(function () {
+            loginNotice($cookies);
+        });
 
         $scope.helpBargin = function(){
-            console.log("Button Press");
             $scope.barginText = "载入中~";
             $scope.barginButtonDisable = "true";
-            let result = $cookies.get("openid");
+            var result = $cookies.get("openid");
             if(result){
                 console.log("logined");
-                let req = {
+                var req = {
                     method: 'POST',
                     url: 'ajax/bargin-help-check.php',
                     headers: {
@@ -291,11 +296,16 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
                     console.log("This is result: " + response.data.result);
 
                     if(response.data.result === 'succ'){
-                        swal("Good job!", "刚刚帮你朋友 <?= $info['nickname'] ?> 砍掉了"
-                            + response.data.amount + "澳币",
-                            "success")
-                        $window.location.reload();
-
+                        swal({
+                            title   : "Good job!",
+                            text    : "刚刚帮你朋友 <?= $info['nickname'] ?> 砍掉了"
+                                        + response.data.amount + "澳币",
+                            type    :   "success",
+                            closeOnConfirm: true,
+                        }, function(){
+                                $window.location.reload();
+                            }
+                        )
                     }else if(response.data.result === 'no-existed'){
                         $cookies.remove('openid');
                         $window.location.reload();
@@ -310,7 +320,7 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
                             confirmButtonText: "发起砍价",
                             closeOnConfirm: false,
                             showLoaderOnConfirm: true,
-                        }, (isConfirm)=>{
+                        }, function(isConfirm){
                             if(isConfirm){
                             startNewBargin($http, $location, $cookies, $window);
                             }
@@ -326,14 +336,18 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
 
             }else{
                 // now is the testing app
-                let urlBase = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxae45c193de06d5a4&redirect_uri="
-                    + "http%3A%2F%2F127.0.0.1%2FAusway%2Fapp%2Fipure-bargin%2Fsrc%2Flanding-guide.php"
+                var urlBase = "https://open.weixin.qq.com/connect/oauth2/authorize?appid="
+                    //+ "wxae45c193de06d5a4"
+                    + "wx2d39a6c422ad663c"
+                    + "&redirect_uri="
+                    //+ "http%3A%2F%2F127.0.0.1%2FAusway%2Fapp%2Fipure-bargin%2Fsrc%2Flanding-guide.php"
+                    + "https%3A%2F%2Foneu.me%2Fapp%2Fipure-bargin%2Flanding-guide.php"
                     + "&response_type=code&scope=snsapi_userinfo&state=<?= $events_id ?>#wechat_redirect";
                 $window.location.href = urlBase;
             }
         }
 
-        $scope.scrollTo = (id)=>{
+        $scope.scrollTo = function(id){
             $location.hash(id);
             console.log($location.hash());
             $anchorScroll();
@@ -341,7 +355,7 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
     });
 
     function startNewBargin($http, $location, $cookies, $window){
-        let req = {
+        var req1 = {
             method: 'POST',
             url: 'ajax/bargin-help-check.php',
             headers: {
@@ -354,7 +368,7 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
             }
         }
 
-        $http(req).then(function(response){
+        $http(req1).then(function(response){
             console.log(response.data.et);
             if(response.data.result == 'succ'){
                 $location.search('et', response.data.et);
@@ -387,6 +401,27 @@ if(isset($_GET['et']) && !empty($_GET['et'])){
         });
     }
 
+    function loginNotice($cookies){
+        if($cookies.get("new_login") == 1){
+            swal({
+                title: "登录成功",
+                text: "开始疯狂砍价吧~~ 2s后关闭",
+                timer: 2000,
+                showConfirmButton: false
+            });
+            $cookies.put("new_login", 2);
+        }
+    }
+
+</script>
+<script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-63651839-1', 'auto');
+    ga('send', 'pageview');
 </script>
 </body>
 </html>

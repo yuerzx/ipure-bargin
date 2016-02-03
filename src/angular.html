@@ -15,8 +15,8 @@
     </div>
     <div ng-controller="cookies">
         <div>{{Sleeping}}</div>
-        <button id="setUp" ng-click="setIt()">Start To Set</button>
-        <button ng-click="getIt()">Get Cookie</button>
+        <button id="setUp" ng-click="setIt()">Remove Cookies</button>
+        <button ng-click="getIt()">Set Cookie</button>
     </div>
 </div>
 <script src="js/angular-cookies.min.js"></script>
@@ -32,7 +32,7 @@
         //set up the cookies first
 
         $scope.getPost = function(){
-            let req = {
+            var req = {
                 method: 'POST',
                 url: 'ajax/bargin-help-check.php',
                 headers: {
@@ -50,7 +50,7 @@
             });
         }
         $scope.setPost = function(){
-            let req = {
+            var req = {
                 method: 'POST',
                 url: 'ajax/bargin-help-check.php',
                 headers: {
@@ -72,14 +72,15 @@
     app.controller("cookies",function($scope, $cookies, $location){
         $scope.setIt = function(){
             $scope.Sleeping = "set cookie";
-            $cookies.put("openid", "998877");
-            let cc = $location.search();
+            $cookies.remove("openid");
+            var cc = $location.search();
             console.log(cc);
             $location.search('et', 4);
         }
 
-        $scope.getIt = () => {
+        $scope.getIt = function(){
             $scope.Sleeping = $cookies.get("openid");
+            $cookies.put("new_login", 1);
         }
     })
 

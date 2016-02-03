@@ -114,7 +114,7 @@ class JSSDK {
       $user_id = $this->getUserByOpenID($res->openid);
       if($user_id){
         //check if the user is in database already
-        $this->updateUserInfo( (string)$res->openid, $res);
+        $result = $this->updateUserInfoById( $user_id, $res);
         $res->user_id = $user_id;
         return $res;
       }else{
@@ -181,26 +181,26 @@ class JSSDK {
     return $lastid;
   }
 
-  public function updateUserInfo($openid, $data){
-    $openid = (string)$openid;
-    if(!isset($data->sex)) $data->sex = 3;
-    if(!isset($data->city)) $data->city = 0;
-    if(!isset($data->province)) $data->province = 3;
-    if(!isset($data->country)) $data->country = 3;
-    if(!isset($data->nickname)) $data->nickname = "";
-    if(!isset($data->headimgurl)) $data->headimgurl = "";
-    $result = $this->wpdb->update(
-        $this->table_wechat_user,
-        array(
-            'sex' => $data->sex,	// integer (number)
-            'nickname' => $data->nickname,
-            'city' => $data->city,
-            'province' => $data->province,
-            'country'  => $data->country,
-            'headimgurl'=> $data->headimgurl
-        ),
-        array( 'openid' => $openid )
-    );
+  public function updateUserInfoById($user_id, $data){
+    if(empty($data->nickname)) {
+      $data->nickname = "";
+    }
+    if(empty($data->headimgurl)) {
+      $data->headimgurl = "";
+    }
+
+    $query = $this->wpdb->prepare("
+            UPDATE $this->table_wechat_user
+            SET
+                `nickname`    = %s,
+                `headimgurl`  = %s
+            WHERE `user_id` = %s
+        ",
+        $data->nickname,
+        $data->headimgurl,
+        $user_id);
+
+    $result = $this->wpdb->get_results($query);
     return $result;
   }
 
