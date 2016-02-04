@@ -109,12 +109,16 @@ textarea {
     color: white;
 }
 
+.join_event tbody td:first-child{
+    border-right: 1px solid #ddd;
+}
+
 
 /*Text Title*/
 /******************************************* more_box_title *************************************************/
 .more_box_title{ min-height: 20px; width: 100%; margin-right: auto; margin-left: auto; margin-top: 10px; }
 .more_box_title_main{min-height: 20px; line-height: 30px; margin-right: auto; margin-left: auto; border-bottom-width: 2px; border-bottom-style: solid; border-bottom-color: #D8131B; position: relative; }
-.more_box_title_main btitle{ background-color: #FAFAFA; position: absolute; left: 10px; top: 5px; padding-right: 10px; padding-left: 10px; font-size: 1em; font-weight: 600; }
+.more_box_title_main btitle{ left: 10px; top: 5px; padding-right: 10px; padding-left: 10px; font-size: 1em; font-weight: 600; }
 
 
 
