@@ -217,8 +217,8 @@ if (isset($_GET['et']) && !empty($_GET['et'])) {
                 </thead>
                 <tbody>
                     <tr class="text-center">
-                        <td><strong>协助朋友</strong><br><img src="img/system/help.jpg"></td>
-                        <td><strong>团队协助</strong><br><img src="img/system/team.jpg"></td>
+                        <td style="width: 50%;"><strong>协助朋友</strong><br><img src="img/system/help.jpg" class="img-rounded img-responsive"></td>
+                        <td><strong>团队协助</strong><br><img src="img/system/team.jpg" class="img-rounded img-responsive"></td>
                     </tr>
                 <tr>
                   <td>帮助朋友砍价，让朋友能拿到最低价的中国红，人人为我，我为人人。朋友之间可以相互砍价哦~</td>
@@ -571,4 +571,13 @@ if (isset($_GET['et']) && !empty($_GET['et'])) {
     ga('send', 'pageview');
 </script>
 </body>
+<footer>
+    <div class="row">
+
+        <div class="col-xs-12 text-center">
+            <hr>
+            <div style="padding-bottom: 20px;"><img src="https://oneu.me/wp-content/uploads/2015/11/favicon.png" style="height: 25px;">技术支持: <a href="https://oneu.me">万友科技</a></div>
+        </div>
+    </div>
+</footer>
 </html>
