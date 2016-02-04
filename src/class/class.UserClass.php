@@ -128,6 +128,23 @@ class Game_Class
         return $result;
     }
 
+    public function get_ref_ranking(){
+        $query = "
+        SELECT $this->table_wechat_bargin_events.`events_id`,
+          $this->table_wechat_user_db.`nickname`,
+          $this->table_wechat_user_db.`headimgurl`,
+          $this->table_wechat_bargin_events.`source_id`,
+          COUNT(*) as count
+        FROM $this->table_wechat_bargin_events
+        JOIN $this->table_wechat_user_db
+        ON $this->table_wechat_bargin_events.`source_id` = $this->table_wechat_user_db.`user_id`
+        ORDER BY count DESC, $this->table_wechat_bargin_events.`source_id` DESC
+        LIMIT 15
+        ";
+        $result = $this->wpdb->get_results($query, ARRAY_A);
+        return $result;
+    }
+
     public function check_if_support_status($user_id, $events_id){
         $u_id = intval($user_id);
         $event_id = intval($events_id);

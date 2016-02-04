@@ -16,18 +16,19 @@ if (isset($_GET['et']) && !empty($_GET['et'])) {
     $events_id = intval($_GET['et']);
     $info = $userClass->get_bargin_events_product_by_eventid($events_id);
     if (empty($info)) {
-        $info = $userClass->get_bargin_events_product_by_eventid(1);
-        $friends_support = $userClass->get_friends_support_by_eventid(1);
+        $info = $userClass->get_bargin_events_product_by_eventid(10);
+        $friends_support = $userClass->get_friends_support_by_eventid(10);
     } else {
         //if the id is real and we can get data from database
         $friends_support = $userClass->get_friends_support_by_eventid($events_id);
     }
 } else {
     // there is a new page, we open the default page for them
-    $info = $userClass->get_bargin_events_product_by_eventid(1);
-    $friends_support = $userClass->get_friends_support_by_eventid(1);
+    $info = $userClass->get_bargin_events_product_by_eventid(10);
+    $friends_support = $userClass->get_friends_support_by_eventid(10);
 }
 
+$ref_rankings = $userClass->get_ref_ranking();
 
 ?>
 
@@ -136,6 +137,8 @@ if (isset($_GET['et']) && !empty($_GET['et'])) {
                 <?php $last_price = end($friends_support)['current_price'];
                 if (empty($last_price)) {
                     echo $info['p_amount'];
+                }else{
+                    echo $last_price;
                 }; ?>
                 </span>
             澳币(折合人民币<?= round($last_price * 4.8, 2); ?>)，快快帮你的朋友补一刀吧！</p>
@@ -318,6 +321,57 @@ if (isset($_GET['et']) && !empty($_GET['et'])) {
 
             </div>
             <div class="weui_btn weui_btn_primary" disabled="true" ngClick = "purchaseNow">立即购买</div>
+        </div>
+    </div>
+    <div class="row" id="refRank">
+        <div class="col-xs-12">
+            <section class="more_box_title">
+                <div class="more_box_title_main">
+                    <btitle>推广战报</btitle>
+                </div>
+            </section>
+        </div>
+        <div class="col-xs-12" style="padding-top: 20px;">
+            <table class="table clearfix qyt_box_table">
+                <thead>
+                <tr>
+                    <td colspan="4" class="text-center">推广战报 全部赠品免费，但是不包邮费 点击查看</td>
+                </tr>
+                <tr>
+                    <td class="text-center">发起人</td>
+                    <td>推广人数</td>
+                    <td>排名</td>
+                    <td>奖品</td>
+                </tr>
+                </thead>
+                <tbody>
+                <?php
+                $count = 1;
+                foreach ($ref_rankings as $ref_ranking) {
+                    ?>
+                    <tr>
+                        <td><a href = "https://oneu.me/app/ipure-bargin/index.php?et=<?= $ref_ranking['events_id'] ?>"><img src="<?= $ref_ranking['headimgurl'] ?>"
+                                 style="max-height: 2em;padding-right: 6px"
+                                 class="img-circle"
+                            ><?= $ref_ranking['nickname'] ?></a>
+                        </td>
+                        <td><?= $ref_ranking['count'] ?></td>
+                        <td><?= $count ?></td>
+                        <td><?php
+                            if($count <= 3){
+                                echo "UGG一双+围巾一条";
+                            }elseif($count >3 && $count <= 10){
+                                echo "免费围巾一条";
+                            }
+                            ?></td>
+                    </tr>
+
+                    <?php
+                    $count ++;
+                }
+                ?>
+                </tbody>
+            </table>
         </div>
     </div>
     <div class="row" id="rules">
@@ -570,6 +624,15 @@ if (isset($_GET['et']) && !empty($_GET['et'])) {
     ga('create', 'UA-63651839-1', 'auto');
     ga('send', 'pageview');
 </script>
+<!-- GoStats JavaScript Based Code -->
+<script type="text/javascript" src="http://gostats.com/js/counter.js"></script>
+<script type="text/javascript">_gos='c3.gostats.com';_goa=311157;
+    _got=5;_goi=1;_gol='Get a counter.';_GoStatsRun();</script>
+<noscript><a target="_blank" title="Get a counter."
+             href="http://gostats.com"><img alt="Get a counter."
+                                            src="http://c3.gostats.com/bin/count/a_311157/t_5/i_1/counter.png"
+                                            style="border-width:0" /></a></noscript>
+<!-- End GoStats JavaScript Based Code -->
 </body>
 <footer>
     <div class="row">
