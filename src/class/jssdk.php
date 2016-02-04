@@ -113,10 +113,16 @@ class JSSDK {
     if(!empty($res->access_token) && isset($res->access_token)){
       $user_id = $this->getUserByOpenID($res->openid);
       if($user_id){
-        //check if the user is in database already
-        $result = $this->updateUserInfoById( $user_id, $res);
-        $res->user_id = $user_id;
-        return $res;
+        $maxTries = 3;
+        for($try =1; $try <= $maxTries; $try ++) {
+          //check if the user is in database already
+          $user_info = $this->getUserInfoJson($res->access_token, (string)$res->openid);
+          if(isset($user_info->nickname) && !empty($user_info->nickname)){
+            $this->updateUserInfoById($user_id, $user_info);
+          }
+          $res->user_id = $user_id;
+        }
+        return $user_info;
       }else{
         //not existed before, I need to creat something
         $this->insertNewUser($res);
