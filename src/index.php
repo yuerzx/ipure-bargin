@@ -311,7 +311,7 @@ $ref_rankings = $userClass->get_most_discount_ranking();
             </table>
         </div>
     </div>
-    <div class="row" id="purchaseNow">
+    <div class="row" id="purchaseNow" ng-controller="purchaseNow" >
         <div class="col-xs-12">
             <section class="more_box_title">
                 <div class="more_box_title_main">
@@ -325,7 +325,7 @@ $ref_rankings = $userClass->get_most_discount_ranking();
                     点击购买成功后，页面将会被锁死，不能继续进行砍价。 请与确认后三天内支付。
 
             </div>
-            <div class="weui_btn weui_btn_primary" disabled="true" ngClick = "purchaseNow">立即购买</div>
+            <div class="weui_btn weui_btn_primary" ng-click ="goTo('#service')">立即购买</div>
         </div>
     </div>
     <div class="row" id="refRank" ng-controller="refRank">
@@ -374,9 +374,9 @@ $ref_rankings = $userClass->get_most_discount_ranking();
                         <td><?php
                             if($count == 1){
                               echo "<strong color='red'>iPhone 6S 玫瑰金</strong>";
-                            }elseif($count >2 && $count <= 7){
+                            }elseif($count >1 && $count <= 7){
                                 echo "免费UGG一双";
-                            }elseif($count > 8 && $count <= 15){
+                            }elseif($count > 7 && $count <= 15){
                                 echo "免费围巾一条";
                             }
                             ?></td>
@@ -394,7 +394,7 @@ $ref_rankings = $userClass->get_most_discount_ranking();
                     <br>有10个人通过你的页面发起了砍价，在最后有4个人成功付款，就算600分
                     <br>分数最高者获得iPhone 6s 玫瑰金16GB一只
 
-                <img src="img/system/iphone6s.PNG" class="text-center img-rounded img-responsive">
+                <img src="img/system/iphone6s.png" class="text-center img-rounded img-responsive">
             </div>
         </div>
     </div>
@@ -574,6 +574,12 @@ $ref_rankings = $userClass->get_most_discount_ranking();
             setTimeout(function(){
                 $window.location.reload();
             }, 700)
+        }
+    })
+
+    app.controller('purchseNow', function($scope, $location, $anchorScroll){
+        $scope.goTo = function(data){
+            goTo(data, $location, $anchorScroll);
         }
     })
 
