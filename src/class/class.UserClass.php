@@ -121,7 +121,8 @@ class Game_Class
         JOIN $this->table_wechat_user_db
         ON $this->table_friends_help.`user_id` = $this->table_wechat_user_db.`user_id`
         WHERE $this->table_friends_help.`events_id` = %d
-        ORDER BY `time_stamp`
+        ORDER BY `time_stamp` DESC
+        LIMIT 15
         ",
             $id);
         $result = $this->wpdb->get_results($query, ARRAY_A);
@@ -142,6 +143,27 @@ class Game_Class
         LIMIT 15
         ";
         $result = $this->wpdb->get_results($query, ARRAY_A);
+        return $result;
+    }
+
+    public function get_most_discount_ranking(){
+        $query = "
+        SELECT $this->table_wechat_bargin_events.`events_id`,
+          $this->table_wechat_bargin_events.`user_id`,
+          $this->table_wechat_user_db.`nickname`,
+          $this->table_wechat_user_db.`headimgurl`,
+          COUNT(*) as count
+        FROM $this->table_friends_help
+        JOIN $this->table_wechat_bargin_events
+        ON $this->table_friends_help.`events_id` = $this->table_wechat_bargin_events.`events_id`
+        JOIN $this->table_wechat_user_db
+        ON $this->table_wechat_user_db.`user_id` = $this->table_wechat_bargin_events.`user_id`
+        GROUP BY $this->table_friends_help.`events_id`
+        ORDER BY count DESC , $this->table_wechat_bargin_events.`user_id` DESC
+        LIMIT 15
+        ";
+        $result = $this->wpdb->get_results($query, ARRAY_A);
+        //return $this->wpdb->last_query;
         return $result;
     }
 
@@ -190,6 +212,16 @@ class Game_Class
             $events_id);
         $result = $this->wpdb->get_var($query);
         return $result;
+    }
+
+    public function get_total_particpate(){
+        $query = "
+        SELECT COUNT(*)
+        FROM $this->table_wechat_user_db
+        ";
+
+        $number = $this->wpdb->get_var($query);
+        return $number;
     }
 
     public function set_new_events($user_id, $product_id, $old_event_id){

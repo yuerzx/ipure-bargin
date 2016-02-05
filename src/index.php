@@ -28,7 +28,7 @@ if (isset($_GET['et']) && !empty($_GET['et'])) {
     $friends_support = $userClass->get_friends_support_by_eventid(10);
 }
 
-$ref_rankings = $userClass->get_ref_ranking();
+$ref_rankings = $userClass->get_most_discount_ranking();
 
 ?>
 
@@ -125,6 +125,11 @@ $ref_rankings = $userClass->get_ref_ranking();
                 </tr>
                 </tbody>
             </table>
+        </div>
+        <div class="col-xs-12">
+            <div class="alert alert-warning" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h5>为了防止找不到回家的路，一定记得点击右上角收藏我哦~</h5></div>
         </div>
     </div>
     <div class="bd">
@@ -323,7 +328,7 @@ $ref_rankings = $userClass->get_ref_ranking();
             <div class="weui_btn weui_btn_primary" disabled="true" ngClick = "purchaseNow">立即购买</div>
         </div>
     </div>
-    <div class="row" id="refRank">
+    <div class="row" id="refRank" ng-controller="refRank">
         <div class="col-xs-12">
             <section class="more_box_title">
                 <div class="more_box_title_main">
@@ -331,11 +336,17 @@ $ref_rankings = $userClass->get_ref_ranking();
                 </div>
             </section>
         </div>
-        <div class="col-xs-12" style="padding-top: 20px;">
+        <div class="col-xs-12" style="padding-top: 20px;" >
             <table class="table clearfix qyt_box_table">
                 <thead>
                 <tr>
-                    <td colspan="4" class="text-center">推广战报 全部赠品免费，但是不包邮费 点击查看</td>
+                    <td colspan="4" class="text-center">推广战报 全部赠品免费，但是不包邮
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4" class="text-center">
+                        总参与人数： <?= $userClass->get_total_particpate(); ?>
+                    </td>
                 </tr>
                 <tr>
                     <td class="text-center">发起人</td>
@@ -350,17 +361,22 @@ $ref_rankings = $userClass->get_ref_ranking();
                 foreach ($ref_rankings as $ref_ranking) {
                     ?>
                     <tr>
-                        <td><a href = "https://oneu.me/app/ipure-bargin/index.php?et=<?= $ref_ranking['events_id'] ?>"><img src="<?= $ref_ranking['headimgurl'] ?>"
+                        <td>
+                            <img src="<?= $ref_ranking['headimgurl'] ?>"
                                  style="max-height: 2em;padding-right: 6px"
                                  class="img-circle"
-                            ><?= $ref_ranking['nickname'] ?></a>
+                            ><a ng-click="reloadPage('<?= $ref_ranking['events_id'] ?>')">
+                                <?= $ref_ranking['nickname'] ?>
+                            </a>
                         </td>
                         <td><?= $ref_ranking['count'] ?></td>
                         <td><?= $count ?></td>
                         <td><?php
-                            if($count <= 3){
-                                echo "UGG一双+围巾一条";
-                            }elseif($count >3 && $count <= 10){
+                            if($count == 1){
+                              echo "<strong color='red'>iPhone 6S 玫瑰金</strong>";
+                            }elseif($count >2 && $count <= 7){
+                                echo "免费UGG一双";
+                            }elseif($count > 8 && $count <= 15){
                                 echo "免费围巾一条";
                             }
                             ?></td>
@@ -372,6 +388,14 @@ $ref_rankings = $userClass->get_ref_ranking();
                 ?>
                 </tbody>
             </table>
+            <div>
+                为防止刷单，分数计算的方式为：参与人数 + 成交人数*150
+                    <br>有100人点击了你的页面，参与了砍价，就算100分
+                    <br>有10个人通过你的页面发起了砍价，在最后有4个人成功付款，就算600分
+                    <br>分数最高者获得iPhone 6s 玫瑰金16GB一只
+
+                <img src="img/system/iphone6s.PNG" class="text-center img-rounded img-responsive">
+            </div>
         </div>
     </div>
     <div class="row" id="rules">
@@ -543,6 +567,16 @@ $ref_rankings = $userClass->get_ref_ranking();
             goTo(hash, $location, $anchorScroll);
         }
     })
+
+    app.controller('refRank', function($scope, $window, $location){
+        $scope.reloadPage = function(nu){
+            $location.search('et', nu);
+            setTimeout(function(){
+                $window.location.reload();
+            }, 700)
+        }
+    })
+
     function startNewBargin($http, $location, $cookies, $window) {
         var req1 = {
             method: 'POST',
@@ -624,15 +658,6 @@ $ref_rankings = $userClass->get_ref_ranking();
     ga('create', 'UA-63651839-1', 'auto');
     ga('send', 'pageview');
 </script>
-<!-- GoStats JavaScript Based Code -->
-<script type="text/javascript" src="http://gostats.com/js/counter.js"></script>
-<script type="text/javascript">_gos='c3.gostats.com';_goa=311157;
-    _got=5;_goi=1;_gol='Get a counter.';_GoStatsRun();</script>
-<noscript><a target="_blank" title="Get a counter."
-             href="http://gostats.com"><img alt="Get a counter."
-                                            src="http://c3.gostats.com/bin/count/a_311157/t_5/i_1/counter.png"
-                                            style="border-width:0" /></a></noscript>
-<!-- End GoStats JavaScript Based Code -->
 </body>
 <footer>
     <div class="row">
